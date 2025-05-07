@@ -1,0 +1,27 @@
+- name: Upload index.html to RHEL HTTP server
+  hosts: 10.20.103.100
+  become: yes
+  tasks:
+
+    - name: Ensure httpd is installed and running
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd service
+      ansible.builtin.systemd:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: Create index.html with inline content and upload it to web root
+      ansible.builtin.copy:
+        content: |
+          <html>
+          <head><title>Welcome</title></head>
+          <body><h1>Hello from Ansible!</h1></body>
+          </html>
+        dest: /var/www/html/index.html
+        owner: apache
+        group: apache
+        mode: '0644'
