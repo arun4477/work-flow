@@ -23,6 +23,11 @@
       command: "uptime -p"
       register: uptime_info
 
+    - name: Print all hosts in play
+      debug:
+        msg: "{{ item }}"
+      loop: "{{ ansible_play_hosts_all }}"
+
     - name: Create CSV content
       set_fact:
         csv_content: |
