@@ -1,6 +1,6 @@
 ---
 - name: Gather system information
-  hosts: rhel-vm-group
+  hosts: all
   become: true
   gather_facts: yes
   vars:
