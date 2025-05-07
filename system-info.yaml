@@ -1,0 +1,57 @@
+---
+- name: Gather system information
+  hosts: rhel-vm-group
+  become: true
+  gather_facts: yes
+  vars:
+    #target_dir: "/tmp/cpu_utilization-{{ansible_date_time.date}}.csv"
+    target_dir: "/tmp/system-info.csv"
+  tasks:
+    - name: Get last patch details on RHEL
+      shell: "sudo yum list updates --security | head -n3"
+      register: last_patch_details
+      changed_when: false
+      ignore_errors: true
+
+    - name: Get CPU Utilization
+      shell:
+        cmd: |
+          grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'
+      register: cpu_util
+
+    - name: Get system uptime
+      command: "uptime -p"
+      register: uptime_info
+
+    - name: Create CSV content
+      set_fact:
+        csv_content: |
+          HOSTNAME,IP_ADDRESS,TOTAL_MEMORY,USED_MEMORY,FREE_MEMORY,BUFFERS_MEMORY,UPTIME_DAYS,UPTIME_HOURS,UPTIME_MINUTES,RECORDED_ON
+          {% for host in ansible_play_hosts_all %}
+          {{ hostvars[host].ansible_facts['fqdn'] }},{{ hostvars[host].ansible_default_ipv4.address }},{{ hostvars[host].ansible_memtotal_mb }},{{ hostvars[host].ansible_memory_mb.real.used }},{{ hostvars[host].ansible_memory_mb.real.total - hostvars[host].ansible_memory_mb.real.used }},{{ (hostvars[host].ansible_memory_mb.cached + hostvars[host].ansible_memory_mb.buffers) if (hostvars[host].ansible_memory_mb.cached is defined and hostvars[host].ansible_memory_mb.buffers is defined) else "N/A" }},{{ hostvars[host].uptime_info.stdout }},{{ ansible_date_time.iso8601 }}
+          {% endfor %}
+          
+    - name: Append data to CSV file
+      lineinfile:
+        line: "{{ item }}"
+        path: "{{ target_dir }}"
+        create: yes
+      loop: "{{ csv_content.split('\n') }}"
+
+    - name: Fetch file from source host to Ansible pod
+      fetch:
+        src: "{{ target_dir }}"
+        dest: "{{ target_dir }}"
+        flat: yes
+
+- name: Copy file to destination host
+  hosts: 10.20.103.107
+  gather_facts: no
+  vars:
+    target_dir: "/tmp/system-info.csv"
+  tasks:
+    - name: Copy file to destination host
+      copy:
+        src: "{{ target_dir }}"
+        dest: "{{ target_dir }}"
+        mode: '0644'
