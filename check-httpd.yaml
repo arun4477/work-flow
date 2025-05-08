@@ -11,10 +11,7 @@
 
     - name: Set a value to the status variable
       ansible.builtin.set_fact:
-        {% if httpd_check.rc == 0 %}
-          status: true
-        {% else %}
-          status: false
+        status: "{{ httpd_check.rc == 0 }}"
 
     - name: Report httpd installation status
       debug:
