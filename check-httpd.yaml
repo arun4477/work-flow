@@ -9,12 +9,12 @@
       register: httpd_check
       ignore_errors: yes
 
-   - name: Set a value to the status variable
-     ansible.builtin.set_fact:
-       {% if httpd_check.rc == 0 %}
-         status: true
-       {% else %}
-         status: false
+    - name: Set a value to the status variable
+      ansible.builtin.set_fact:
+        {% if httpd_check.rc == 0 %}
+          status: true
+        {% else %}
+          status: false
 
     - name: Report httpd installation status
       debug:
