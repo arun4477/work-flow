@@ -1,5 +1,5 @@
 - name: Upload index.html to RHEL HTTP server
-  hosts: 10.20.103.100
+  hosts: 10.20.103.114
   become: yes
   tasks:
 
