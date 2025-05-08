@@ -1,6 +1,8 @@
 - name: Check if httpd is installed on RHEL servers
   hosts: 10.20.103.114
   become: yes
+  vars:
+    status: true
   tasks:
     - name: Check if httpd package is installed
       ansible.builtin.shell: rpm -q httpd
@@ -12,6 +14,11 @@
         msg: >
           {% if httpd_check.rc == 0 %}
             httpd is installed.
+            status: true
           {% else %}
             httpd is NOT installed.
+            status: false
           {% endif %}
+      failed_when: status == false
+ 
+   
