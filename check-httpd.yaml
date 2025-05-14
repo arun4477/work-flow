@@ -1,5 +1,5 @@
 - name: Check if httpd is installed on RHEL servers
-  hosts: webserver
+  hosts: webserver.integraoffice.lab
   become: yes
   vars:
     status: true
