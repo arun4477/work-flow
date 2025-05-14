@@ -1,5 +1,5 @@
 - name: Check if httpd is installed on RHEL servers
-  hosts: 10.20.103.114
+  hosts: webserver
   become: yes
   vars:
     status: true
